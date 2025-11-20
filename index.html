@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Learning Brayton Quadrant</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- KaTeX CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* Custom Animations */
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slide-down {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out;
+        }
+        
+        .animate-slide-up {
+            animation: slide-up 0.5s ease-out;
+        }
+        
+        .animate-slide-down {
+            animation: slide-down 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+        
+        // Image paths
+        const images = {
+            default: './images/image_1763518327056.png',
+            compression: './images/image_1761866205165.png',
+            combustion: './images/image_1761866215174.png',
+            expansion: './images/image_1761866221138.png',
+            exhaust: './images/image_1761866232493.png',
+            tsPvDiagram: './images/image_1762165756450.png',
+            combustionSchematic: './images/image_1763519047620.png',
+            combustionTsPvDiagram: './images/image_1762166263311.png',
+            compressionSchematic: './images/image_1763610879584.png',
+            compressionTsPvDiagram: './images/image_1762166728965.png',
+            exhaustSchematic: './images/image_1763519159116.png',
+            exhaustTsPvDiagram: './images/image_1762166957558.png',
+            expansionSchematic: './images/image_1763519052620.png',
+            efficiencyGraph: './images/image_1762170081738.png'
+        };
+        
+        function LatexFormula({ formula }) {
+            const ref = useRef(null);
+            
+            useEffect(() => {
+                if (ref.current && window.katex) {
+                    window.katex.render(formula, ref.current, {
+                        throwOnError: false,
+                        displayMode: true,
+                    });
+                }
+            }, [formula]);
+            
+            return <div ref={ref} className="my-4 text-center text-xl" />;
+        }
+        
+        const quadrantData = {
+            exhaust: {
+                title: "Exhaust",
+                sections: [
+                    {
+                        sectionTitle: "Exhaust Process Overview",
+                        text: "In a Brayton Cycle, the exhaust process functions to return the conditions at the turbine exit to the atmospheric conditions observed at the inlet.",
+                    },
+                    {
+                        sectionTitle: "Extensions to the Brayton Cycle",
+                        text: "Often, exhaust heat generated at the end of the Brayton Cycle can be used to improve the efficiency of the system. The key efficiency improvements from waste-heat usage involve:",
+                        points: [
+                            "Using the waste heat for other purposes.",
+                            "Reusing waste heat to reduce the energy required to reach the target post-combustion temperature.",
+                        ],
+                    },
+                    {
+                        sectionTitle: "Regeneration/Recuperation",
+                        text: "Regeneration captures waste heat from the turbine exhaust and uses it to preheat the compressed air entering the combustor. This process improves thermal efficiency by reducing the amount of fuel required for combustion.",
+                    },
+                    {
+                        sectionTitle: "Cogeneration (Combined Heat and Power)",
+                        text: "Cogeneration systems use the turbine's exhaust heat to produce useful thermal energy for heating, steam generation, or industrial processes while simultaneously generating electricity. This dual use of energy greatly increases overall system efficiency.",
+                    },
+                ],
+            },
+            combustion: {
+                title: "Combustion",
+                sections: [
+                    {
+                        sectionTitle: "Combustion Process Overview",
+                        text: "The combustion process is the means by which energy is added from the fuel to the air moving through the engine.  For ideal Brayton Cycles, it is assumed the combustion process is isobaric (occurring at constant pressure). The combustion process is vital for a gas turbine engine's operation, as the energy added is required for the engine to be of use. The post-combustion temperatures are the highest in the Brayton Cycle.",
+                    },
+                    {
+                        sectionTitle: "Combustion Considerations",
+                        text: "In a Brayton cycle, we make several assumptions.",
+                        points: [
+                            "The air standard assumption, where the working fluid is assumed to remain the same, even post combustion.",
+                            "Non-Ideal Combustion: Combustion can be non-ideal, which acts to reduce the engine efficiency. There are many factors which lead to reduced combustion efficiency, including changes in pressure, and how well the fuel combusts.",
+                        ],
+                    },
+                ],
+            },
+            expansion: {
+                title: "Expansion",
+                sections: [
+                    {
+                        sectionTitle: "Expansion Process Overview",
+                        text: "The expansion process is where energy from the high-pressure combustion gases is converted into mechanical work. This work not only powers the compressor but can also provide useful power output for other equipment. In order to do this, a turbine consists of nozzles (which accelerate and direct gases), and the rotor (which extracts the energy).",
+                    },
+                    {
+                        sectionTitle: "The Expansion Turbine",
+                        text: "The expansion turbine can consists of several different sections. The gas producer and power turbines are examples of a possible expansion turbine configuration.",
+                        points: [
+                            "Gas Producer/Generator Turbine: Responsible for powering the compressor.",
+                            "Power Turbine: Sitting on a different spool, the Power Turbine is used to power external equipment.",
+                        ],
+                    },
+                ],
+            },
+            compression: {
+                title: "Compression",
+                sections: [
+                    {
+                        sectionTitle: "Compression Process Overview",
+                        text: "Compression is the process of increasing the pressure of the intake air, allowing the gas turbine to generate useful work. As air passes through the inlet and into the compressor, it moves through multiple stages of rotating and stationary blades. The rotating blades (rotors) add kinetic energy to the air, while the stationary blades (stators) convert that velocity into pressure, causing pressure to rise. This high-pressure air is essential for complete combustion, especially with higher fuel usage. Additionally, the compressor requires power extracted from the turbine to operate.",
+                    },
+                    {
+                        sectionTitle: "Compression and Cycle Efficiency",
+                        text: "A compressor is important in increasing the efficiency of a gas turbine. This is seen through the formula for the efficiency of an ideal Brayton Cycle, which is a function of the pressure ratio.",
+                        image: images.efficiencyGraph,
+                        imageCaption: "The thermal efficiency of a gas turbine increases with compressor pressure ratio, though the rate of improvement decreases as the ratio becomes higher.",
+                        formula: "\\eta_{th,Brayton} = 1 - \\frac{1}{r_p^{\\frac{k-1}{k}}}",
+                        formulaCaption: "where k = specific heat ratio",
+                    },
+                    {
+                        sectionTitle: "",
+                        text: "",
+                        formula: "r_p = \\frac{P_2}{P_1}",
+                        formulaCaption: "The compression ratio is given by the ratio of inlet and post-compression pressure.",
+                    },
+                ],
+            },
+        };
+        
+        function Home() {
+            const [selectedQuadrant, setSelectedQuadrant] = useState(null);
+            const [isDetailView, setIsDetailView] = useState(false);
+            const [hoveredQuadrant, setHoveredQuadrant] = useState(null);
+            const [selectedExpansionDiagram, setSelectedExpansionDiagram] = useState("schematic");
+            const [selectedCombustionDiagram, setSelectedCombustionDiagram] = useState("schematic");
+            const [selectedCompressionDiagram, setSelectedCompressionDiagram] = useState("schematic");
+            const [selectedExhaustDiagram, setSelectedExhaustDiagram] = useState("schematic");
+            const hoverTimeoutRef = useRef(null);
+            
+            const handleMouseEnter = (quadrant) => {
+                if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current);
+                    hoverTimeoutRef.current = null;
+                }
+                setHoveredQuadrant(quadrant);
+            };
+            
+            const handleMouseLeave = () => {
+                hoverTimeoutRef.current = setTimeout(() => {
+                    setHoveredQuadrant(null);
+                }, 100);
+            };
+            
+            const handleQuadrantClick = (quadrant) => {
+                if (selectedQuadrant === quadrant && isDetailView) {
+                    setSelectedQuadrant(null);
+                    setIsDetailView(false);
+                } else {
+                    setSelectedQuadrant(quadrant);
+                    setIsDetailView(true);
+                }
+            };
+            
+            const getButtonClasses = (quadrant, isNav = false) => {
+                const baseClasses = isNav
+                    ? "px-8 py-4 rounded-full font-medium text-lg transition-all duration-300 ease-out transform hover:scale-105 focus:outline-none focus:ring-4 hover:shadow-lg"
+                    : "min-h-[100px] md:min-h-[120px] rounded-2xl font-semibold text-2xl md:text-3xl transition-all duration-300 ease-out transform hover:scale-105 focus:outline-none focus:ring-4 hover:shadow-xl active:scale-95";
+                
+                const isActive = selectedQuadrant === quadrant && isDetailView;
+                
+                const colorMap = {
+                    compression: {
+                        bg: "bg-[#1A6FEA]",
+                        hover: "hover:bg-[#1559C4]",
+                        activeBg: "bg-[#10439E]",
+                        ring: "focus:ring-[#1A6FEA]/30",
+                        activeRing: "ring-[#1A6FEA]/50",
+                    },
+                    combustion: {
+                        bg: "bg-[#D22E2E]",
+                        hover: "hover:bg-[#B52525]",
+                        activeBg: "bg-[#981D1D]",
+                        ring: "focus:ring-[#D22E2E]/30",
+                        activeRing: "ring-[#D22E2E]/50",
+                    },
+                    expansion: {
+                        bg: "bg-[#F45A5A]",
+                        hover: "hover:bg-[#F23838]",
+                        activeBg: "bg-[#F01616]",
+                        ring: "focus:ring-[#F45A5A]/30",
+                        activeRing: "ring-[#F45A5A]/50",
+                    },
+                    exhaust: {
+                        bg: "bg-[#E587A8]",
+                        hover: "hover:bg-[#D9658C]",
+                        activeBg: "bg-[#CD4370]",
+                        ring: "focus:ring-[#E587A8]/30",
+                        activeRing: "ring-[#E587A8]/50",
+                    },
+                };
+                
+                const colors = colorMap[quadrant];
+                const colorClasses = isActive
+                    ? `${colors.activeBg} text-white ring-4 ${colors.activeRing} shadow-lg`
+                    : `${colors.bg} ${colors.hover} text-white ${colors.ring}`;
+                
+                return `${baseClasses} ${colorClasses}`;
+            };
+            
+            const getDisplayImage = () => {
+                if (!hoveredQuadrant) return images.default;
+                
+                const imageMap = {
+                    compression: images.compression,
+                    combustion: images.combustion,
+                    expansion: images.expansion,
+                    exhaust: images.exhaust,
+                };
+                
+                return imageMap[hoveredQuadrant];
+            };
+            
+            const renderLatexInline = (latex) => {
+                return {
+                    __html: window.katex.renderToString(latex, {
+                        throwOnError: false,
+                    })
+                };
+            };
+            
+            return (
+                <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
+                                Stacked Learning Brayton Quadrant
+                            </h1>
+                            <div className="w-24 h-1 bg-red-500 mx-auto rounded-full"></div>
+                        </div>
+                        
+                        <div className={`transition-all duration-500 ease-out ${isDetailView ? "nav-mode" : "grid-mode"}`}>
+                            {!isDetailView && (
+                                <div className="mb-6 flex justify-center">
+                                    <img
+                                        src={getDisplayImage()}
+                                        alt="Quadrant visualization"
+                                        className="w-full md:w-[80%] h-auto object-contain rounded-lg"
+                                    />
+                                </div>
+                            )}
+                            
+                            {!isDetailView && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5 mb-8 animate-fade-in">
+                                    <button
+                                        onClick={() => handleQuadrantClick("compression")}
+                                        onMouseEnter={() => handleMouseEnter("compression")}
+                                        onMouseLeave={handleMouseLeave}
+                                        className={getButtonClasses("compression")}
+                                    >
+                                        Compression
+                                    </button>
+                                    <button
+                                        onClick={() => handleQuadrantClick("combustion")}
+                                        onMouseEnter={() => handleMouseEnter("combustion")}
+                                        onMouseLeave={handleMouseLeave}
+                                        className={getButtonClasses("combustion")}
+                                    >
+                                        Combustion
+                                    </button>
+                                    <button
+                                        onClick={() => handleQuadrantClick("expansion")}
+                                        onMouseEnter={() => handleMouseEnter("expansion")}
+                                        onMouseLeave={handleMouseLeave}
+                                        className={getButtonClasses("expansion")}
+                                    >
+                                        Expansion
+                                    </button>
+                                    <button
+                                        onClick={() => handleQuadrantClick("exhaust")}
+                                        onMouseEnter={() => handleMouseEnter("exhaust")}
+                                        onMouseLeave={handleMouseLeave}
+                                        className={getButtonClasses("exhaust")}
+                                    >
+                                        Exhaust
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {isDetailView && (
+                                <div className="flex flex-wrap justify-center gap-4 mb-8 animate-slide-down">
+                                    <button onClick={() => handleQuadrantClick("compression")} className={getButtonClasses("compression", true)}>
+                                        Compression
+                                    </button>
+                                    <button onClick={() => handleQuadrantClick("combustion")} className={getButtonClasses("combustion", true)}>
+                                        Combustion
+                                    </button>
+                                    <button onClick={() => handleQuadrantClick("expansion")} className={getButtonClasses("expansion", true)}>
+                                        Expansion
+                                    </button>
+                                    <button onClick={() => handleQuadrantClick("exhaust")} className={getButtonClasses("exhaust", true)}>
+                                        Exhaust
+                                    </button>
+                                </div>
+                            )}
+                            
+                            <div className="text-center text-gray-600 text-lg mb-8">
+                                {isDetailView && selectedQuadrant
+                                    ? `Click the ${selectedQuadrant.charAt(0).toUpperCase() + selectedQuadrant.slice(1)} button again to return to the grid view`
+                                    : "Hover over each quadrant to explore, click to view details"}
+                            </div>
+                        </div>
+                        
+                        {isDetailView && selectedQuadrant && (
+                            <div className="mb-8 animate-slide-up">
+                                <div className="text-center mb-6">
+                                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                                        {quadrantData[selectedQuadrant].title}
+                                    </h2>
+                                    <div className="w-16 h-1 bg-red-500 mx-auto rounded-full"></div>
+                                </div>
+                                
+                                {selectedQuadrant === "expansion" && (
+                                    <div className="mb-8 max-w-4xl mx-auto">
+                                        <div className="flex justify-center mb-4">
+                                            <img
+                                                src={selectedExpansionDiagram === "schematic" ? images.expansionSchematic : images.tsPvDiagram}
+                                                alt={selectedExpansionDiagram === "schematic" ? "Cycle Schematic" : "TS and PV Diagram"}
+                                                className="w-full md:w-3/4 h-auto object-contain rounded-lg"
+                                            />
+                                        </div>
+                                        <p className="text-gray-700 text-center text-lg leading-relaxed mb-4">
+                                            {selectedExpansionDiagram === "schematic"
+                                                ? "Expansion is a process occuring in a turbine for the Brayton Cycle."
+                                                : "Expansion is isentropic in an ideal Brayton cycle, and decreases the pressure and temperature of the air."}
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-2">
+                                            T - Temperature&nbsp;&nbsp;&nbsp;&nbsp;S - Entropy&nbsp;&nbsp;&nbsp;&nbsp;P - Pressure&nbsp;&nbsp;&nbsp;&nbsp;V - Volume
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-4">
+                                            <span className="inline-flex items-center justify-center gap-1">
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{in}")} />
+                                                <span> - Heat In&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{out}")} />
+                                                <span> - Heat Out</span>
+                                            </span>
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <button
+                                                onClick={() => setSelectedExpansionDiagram("schematic")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedExpansionDiagram === "schematic"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                Cycle Schematic
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedExpansionDiagram("tspv")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedExpansionDiagram === "tspv"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                TS and PV Diagram
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {selectedQuadrant === "combustion" && (
+                                    <div className="mb-8 max-w-4xl mx-auto">
+                                        <div className="flex justify-center mb-4">
+                                            <img
+                                                src={selectedCombustionDiagram === "schematic" ? images.combustionSchematic : images.combustionTsPvDiagram}
+                                                alt={selectedCombustionDiagram === "schematic" ? "Cycle Schematic" : "TS and PV Diagram"}
+                                                className="w-full md:w-3/4 h-auto object-contain rounded-lg"
+                                            />
+                                        </div>
+                                        <p className="text-gray-700 text-center text-lg leading-relaxed mb-4">
+                                            {selectedCombustionDiagram === "schematic"
+                                                ? "The Combustion process involves combusting fuel with air in the combustion chamber."
+                                                : "Combustion is modelled as isobaric. It is accompanied by a heat input, and temperature rise, which is inherently entropic."}
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-2">
+                                            T - Temperature&nbsp;&nbsp;&nbsp;&nbsp;S - Entropy&nbsp;&nbsp;&nbsp;&nbsp;P - Pressure&nbsp;&nbsp;&nbsp;&nbsp;V - Volume
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-4">
+                                            <span className="inline-flex items-center justify-center gap-1">
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{in}")} />
+                                                <span> - Heat In&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{out}")} />
+                                                <span> - Heat Out</span>
+                                            </span>
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <button
+                                                onClick={() => setSelectedCombustionDiagram("schematic")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedCombustionDiagram === "schematic"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                Cycle Schematic
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedCombustionDiagram("tspv")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedCombustionDiagram === "tspv"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                TS and PV Diagram
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {selectedQuadrant === "compression" && (
+                                    <div className="mb-8 max-w-4xl mx-auto">
+                                        <div className="flex justify-center mb-4">
+                                            <img
+                                                src={selectedCompressionDiagram === "schematic" ? images.compressionSchematic : images.compressionTsPvDiagram}
+                                                alt={selectedCompressionDiagram === "schematic" ? "Cycle Schematic" : "TS and PV Diagram"}
+                                                className="w-full md:w-3/4 h-auto object-contain rounded-lg"
+                                            />
+                                        </div>
+                                        <p className="text-gray-700 text-center text-lg leading-relaxed mb-4">
+                                            {selectedCompressionDiagram === "schematic"
+                                                ? "Compression occurs through the compressor of the gas turbine engine."
+                                                : "Compression causes the pressure of the fluid to increase as seen on the PV diagram. The TS diagram also shows that temperature increases, and that in a Brayton Cycle, compression is isentropic."}
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-2">
+                                            T - Temperature&nbsp;&nbsp;&nbsp;&nbsp;S - Entropy&nbsp;&nbsp;&nbsp;&nbsp;P - Pressure&nbsp;&nbsp;&nbsp;&nbsp;V - Volume
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-4">
+                                            <span className="inline-flex items-center justify-center gap-1">
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{in}")} />
+                                                <span> - Heat In&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{out}")} />
+                                                <span> - Heat Out</span>
+                                            </span>
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <button
+                                                onClick={() => setSelectedCompressionDiagram("schematic")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedCompressionDiagram === "schematic"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                Cycle Schematic
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedCompressionDiagram("tspv")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedCompressionDiagram === "tspv"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                TS and PV Diagram
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {selectedQuadrant === "exhaust" && (
+                                    <div className="mb-8 max-w-4xl mx-auto">
+                                        <div className="flex justify-center mb-4">
+                                            <img
+                                                src={selectedExhaustDiagram === "schematic" ? images.exhaustSchematic : images.exhaustTsPvDiagram}
+                                                alt={selectedExhaustDiagram === "schematic" ? "Cycle Schematic" : "TS and PV Diagram"}
+                                                className="w-full md:w-3/4 h-auto object-contain rounded-lg"
+                                            />
+                                        </div>
+                                        <p className="text-gray-700 text-center text-lg leading-relaxed mb-4">
+                                            {selectedExhaustDiagram === "schematic"
+                                                ? "The exhaust process refers to the air exiting the engine (in a open-cycle, as shown above). In a closed cycle, a heat exchanger is used to return the fluid to inlet conditions."
+                                                : "The exhaust process results in heat begin released, so the air can return to atmospheric conditions."}
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-2">
+                                            T - Temperature&nbsp;&nbsp;&nbsp;&nbsp;S - Entropy&nbsp;&nbsp;&nbsp;&nbsp;P - Pressure&nbsp;&nbsp;&nbsp;&nbsp;V - Volume
+                                        </p>
+                                        <p className="text-gray-600 text-center text-sm mb-4">
+                                            <span className="inline-flex items-center justify-center gap-1">
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{in}")} />
+                                                <span> - Heat In&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                                <span className="inline-block" dangerouslySetInnerHTML={renderLatexInline("q_{out}")} />
+                                                <span> - Heat Out</span>
+                                            </span>
+                                        </p>
+                                        <div className="flex justify-center gap-4">
+                                            <button
+                                                onClick={() => setSelectedExhaustDiagram("schematic")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedExhaustDiagram === "schematic"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                Cycle Schematic
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedExhaustDiagram("tspv")}
+                                                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                                                    selectedExhaustDiagram === "tspv"
+                                                        ? "bg-red-500 text-white shadow-md"
+                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                                }`}
+                                            >
+                                                TS and PV Diagram
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {quadrantData[selectedQuadrant].sections && (
+                                    <div className="space-y-8 max-w-4xl mx-auto">
+                                        {quadrantData[selectedQuadrant].sections.map((section, index) => (
+                                            <div key={index} className="text-left">
+                                                {selectedQuadrant === "exhaust" && (section.sectionTitle === "Regeneration/Recuperation" || section.sectionTitle === "Cogeneration (Combined Heat and Power)") ? (
+                                                    <h4 className="text-xl font-semibold text-gray-700 mb-3 ml-4">
+                                                        {section.sectionTitle}
+                                                    </h4>
+                                                ) : (
+                                                    <h3 className="text-2xl font-semibold text-gray-800 mb-3">
+                                                        {section.sectionTitle}
+                                                    </h3>
+                                                )}
+                                                
+                                                {selectedQuadrant === "combustion" && section.sectionTitle === "Combustion Process Overview" ? (
+                                                    <>
+                                                        <p className="text-gray-700 text-lg leading-relaxed mb-4">{section.text}</p>
+                                                        <div className="flex justify-center items-start gap-6 my-6">
+                                                            <div className="w-40 h-40 bg-red-100 text-red-700 rounded border-2 border-red-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 19V5M5 12l7-7 7 7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Temperature Increase</span>
+                                                            </div>
+                                                            <div className="w-40 h-40 bg-gray-100 text-gray-700 rounded border-2 border-gray-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <span className="font-bold text-3xl">=</span>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Constant Pressure</span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : selectedQuadrant === "expansion" && section.sectionTitle === "Expansion Process Overview" ? (
+                                                    <>
+                                                        <p className="text-gray-700 text-lg leading-relaxed mb-4">{section.text}</p>
+                                                        <div className="flex justify-center items-start gap-6 my-6">
+                                                            <div className="w-40 h-40 bg-blue-100 text-blue-700 rounded border-2 border-blue-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 5v14M19 12l-7 7-7-7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Temperature Decrease</span>
+                                                            </div>
+                                                            <div className="w-40 h-40 bg-blue-100 text-blue-700 rounded border-2 border-blue-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 5v14M19 12l-7 7-7-7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Pressure Decrease</span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : selectedQuadrant === "exhaust" && section.sectionTitle === "Exhaust Process Overview" ? (
+                                                    <>
+                                                        <p className="text-gray-700 text-lg leading-relaxed mb-4">{section.text}</p>
+                                                        <div className="flex justify-center items-start gap-6 my-6">
+                                                            <div className="w-40 h-40 bg-blue-100 text-blue-700 rounded border-2 border-blue-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 5v14M19 12l-7 7-7-7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Temperature Decrease</span>
+                                                            </div>
+                                                            <div className="w-40 h-40 bg-gray-100 text-gray-700 rounded border-2 border-gray-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <span className="font-bold text-3xl">=</span>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Constant Pressure</span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : selectedQuadrant === "compression" && section.sectionTitle === "Compression Process Overview" ? (
+                                                    <>
+                                                        <p className="text-gray-700 text-lg leading-relaxed mb-4">{section.text}</p>
+                                                        <div className="flex justify-center items-start gap-6 my-6">
+                                                            <div className="w-40 h-40 bg-red-100 text-red-700 rounded border-2 border-red-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 19V5M5 12l7-7 7 7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Temperature Increase</span>
+                                                            </div>
+                                                            <div className="w-40 h-40 bg-red-100 text-red-700 rounded border-2 border-red-300 flex flex-col items-center pt-12">
+                                                                <div className="h-8 flex items-center justify-center mb-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 19V5M5 12l7-7 7 7" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="font-semibold text-lg text-center leading-tight">Pressure Increase</span>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <p className={`text-gray-700 text-lg leading-relaxed mb-4 ${
+                                                        selectedQuadrant === "exhaust" && (section.sectionTitle === "Regeneration/Recuperation" || section.sectionTitle === "Cogeneration (Combined Heat and Power)")
+                                                            ? "ml-4" : ""
+                                                    }`}>
+                                                        {section.text}
+                                                    </p>
+                                                )}
+                                                
+                                                {section.points && (
+                                                    <ul className="list-disc text-gray-700 text-lg leading-relaxed mb-4 ml-8">
+                                                        {section.points.map((point, idx) => (
+                                                            <li key={idx} className="mb-2 pl-2">{point}</li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                                
+                                                {section.image && (
+                                                    <div className="my-6">
+                                                        <div className="flex justify-center">
+                                                            <img src={section.image} alt="Efficiency graph" className="w-full md:w-[60%] h-auto object-contain" />
+                                                        </div>
+                                                        {section.imageCaption && (
+                                                            <p className="text-center text-gray-600 text-sm italic mt-3 px-4">{section.imageCaption}</p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                
+                                                {section.formula && section.points ? (
+                                                    <div className="ml-8">
+                                                        <LatexFormula formula={section.formula} />
+                                                        {section.formulaCaption && (
+                                                            <p className="text-center text-gray-600 text-sm mt-2">{section.formulaCaption}</p>
+                                                        )}
+                                                    </div>
+                                                ) : section.formula ? (
+                                                    <div>
+                                                        <LatexFormula formula={section.formula} />
+                                                        {section.formulaCaption && (
+                                                            <p className="text-center text-gray-600 text-sm mt-2">{section.formulaCaption}</p>
+                                                        )}
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Home />);
+    </script>
+</body>
+</html>
